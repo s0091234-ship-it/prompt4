@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>바로바로 프롬프트 (Prompt-Copy) - 원클릭 프롬프트 복사 허브</title>
+  <meta name="description" content="로그인 없이 바로 사용하는 실시간 프롬프트 검색 및 원클릭 복사 플랫폼입니다. 한국 실무 1위 프리텐다드 서체로 선명하고 또렷하게 확인하세요.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- 상단 헤더 -->
+    <header class="site-header">
+      <div class="brand-wrapper">
+        <div class="brand-logo-icon">⚡</div>
+        <div>
+          <h1 class="brand-title">
+            바로바로 프롬프트
+            <span class="brand-badge">PROMPT-COPY</span>
+          </h1>
+          <p class="brand-desc">검색하고 클릭 한 번으로 바로 복사하는 스마트 프롬프트 보관함</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- 동기화 상태 인디케이터 -->
+        <div class="sync-status" title="구글 스프레드시트와 실시간 연동 상태">
+          <span class="status-dot"></span>
+          <span id="syncStatusText">동기화 대기 중...</span>
+        </div>
+
+        <!-- 수동 새로고침 버튼 -->
+        <button id="refreshBtn" class="icon-btn" title="구글 스프레드시트 최신 데이터 새로고침" aria-label="새로고침">
+          🔄
+        </button>
+
+        <!-- 테마 전환 버튼 (다크/라이트) -->
+        <button id="themeToggleBtn" class="icon-btn" title="테마 변경 (다크/라이트)" aria-label="테마 전환">
+          <span id="themeIcon">☀️</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 히어로 & 스마트 검색 영역 -->
+    <section class="hero-section">
+      <h2 class="hero-heading">필요한 프롬프트를 <span>즉시 검색하고 바로 복사</span>하세요</h2>
+      <p class="hero-subtitle">로그인 없이 언제든 편리하게 원하는 프롬프트를 찾아 복사할 수 있습니다.</p>
+
+      <!-- 대형 검색창 -->
+      <div class="search-container">
+        <div class="search-bar-wrap">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            id="searchInput" 
+            class="search-input" 
+            placeholder="프롬프트 이름이나 내용 키워드를 입력하세요... (예: 이미지, 깔끔하게, dummy)" 
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <button id="clearSearchBtn" class="clear-search-btn" title="검색어 지우기" aria-label="검색어 초기화">✕</button>
+        </div>
+
+        <!-- 빠른 카테고리 태그 필터 -->
+        <div id="filterTags" class="filter-tags-wrap">
+          <!-- JS에서 동적으로 채워짐 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 컨트롤 바 (결과 수 + 뷰 모드 전환) -->
+    <div class="controls-bar">
+      <div id="resultsCount" class="results-count">프롬프트를 불러오는 중...</div>
+      
+      <div class="view-switcher">
+        <button id="viewTableBtn" class="view-btn active" title="테이블 형태로 보기">
+          <span>📋</span> 테이블 뷰
+        </button>
+        <button id="viewCardBtn" class="view-btn" title="카드 형태로 보기">
+          <span>🗂️</span> 카드 뷰
+        </button>
+      </div>
+    </div>
+
+    <!-- 1. 테이블 뷰 (기본) -->
+    <div id="tableViewWrapper" class="table-wrapper">
+      <table class="prompt-table">
+        <thead>
+          <tr>
+            <th class="col-id">#</th>
+            <th class="col-name">프롬프트 이름</th>
+            <th class="col-prompt">프롬프트 내용</th>
+            <th class="col-action">동작</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- JS 동적 생성 -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 2. 카드 그리드 뷰 -->
+    <div id="cardGrid" class="card-grid" style="display: none;">
+      <!-- JS 동적 생성 -->
+    </div>
+
+    <!-- 3. 페이지네이션 네비게이션 바 -->
+    <nav id="paginationContainer" class="pagination-container" aria-label="프롬프트 목록 페이지 탐색" style="display: none;">
+      <div class="pagination-info" id="paginationInfo">
+        <!-- JS 동적 생성: 1-10 / 36개 표시 -->
+      </div>
+      
+      <div class="pagination-controls" id="paginationControls">
+        <!-- JS 동적 생성: 처음, 이전, 숫자, 다음, 끝 버튼 -->
+      </div>
+
+      <div class="pagination-size-wrap">
+        <label for="pageSizeSelect" class="page-size-label">페이지당</label>
+        <select id="pageSizeSelect" class="page-size-select" title="페이지당 표시할 항목 수 선택">
+          <option value="10">10개씩 보기</option>
+          <option value="20">20개씩 보기</option>
+          <option value="30">30개씩 보기</option>
+          <option value="50">50개씩 보기</option>
+        </select>
+      </div>
+    </nav>
+
+    <!-- 검색 결과 없음 상태 (Empty State) -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <div class="empty-icon">🔎</div>
+      <h3 class="empty-title">검색된 프롬프트가 없습니다</h3>
+      <p class="empty-desc">입력하신 검색어와 일치하는 프롬프트 이름이나 본문이 없습니다.</p>
+      <button id="resetSearchBtn" class="btn-reset-search">검색어 초기화하기</button>
+    </div>
+
+  </div>
+
+  <!-- 프롬프트 상세 보기 모달 -->
+  <div id="modalOverlay" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">프롬프트 상세 정보</h3>
+        <button id="modalCloseBtn" class="modal-close-btn" title="창 닫기">✕</button>
+      </div>
+      <div class="modal-body">
+        <pre id="modalContent" class="modal-prompt-content"></pre>
+      </div>
+      <div class="modal-footer">
+        <button id="modalCancelBtn" class="btn-secondary">닫기</button>
+        <button id="modalCopyBtn" class="btn-copy">
+          <span class="btn-copy-icon">📋</span>
+          <span class="btn-copy-text">이 프롬프트 복사하기</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 플로팅 토스트 알림 컨테이너 -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- 데이터 및 스크립트 로드 -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
